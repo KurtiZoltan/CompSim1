@@ -2,10 +2,18 @@
 #include "ImageRenderer.hpp"
 #include <iostream>
 
+ReferenceFrame::ReferenceFrame(const vec4& position, const vec4& velocity, const vec4& lookAt, const vec4& up) :
+    position(position), time(velocity), up(up), lookAt(lookAt)
+{
+    
+}
+
 ImageRenderer::ImageRenderer(Spacetime& spacetime, ReferenceFrame& referenceFrame, u32 width, u32 height) :
     m_spacetime(spacetime), m_referenceFrame(referenceFrame), m_width(width), m_height(height)
 {
     m_rayBeginnings = new f32[m_width * m_height * 8 * sizeof(f32)];
+    initFrame(m_referenceFrame.time, m_referenceFrame.lookAt, m_referenceFrame.up);
+    genInitialRays();
 }
 
 ImageRenderer::~ImageRenderer()
@@ -38,6 +46,23 @@ void ImageRenderer::genInitialRays()
     }
 }
 
+f32 det(const vec4& v0, const vec4& v1, const vec4& v2, const vec4& v3)
+{
+    vec4 v[4];
+    v[0] = v0;
+    v[1] = v1;
+    v[2] = v2;
+    v[3] = v3;
+    for (u32 i = 0; i < 4; i++)
+    {
+        for (u32 j = i + 1; j < 4; j++)
+        {
+            v[j] = v[j] - v[j][i] / v[i][i] * v[i];
+        }
+    }
+    return v[0][0] * v[1][1] * v[2][2] * v[3][3];
+}
+
 void ImageRenderer::initFrame(const vec4& time, const vec4& lookAt, const vec4& up)
 {
     m_referenceFrame.time = time;
@@ -49,10 +74,31 @@ void ImageRenderer::initFrame(const vec4& time, const vec4& lookAt, const vec4& 
     projectOrthogonal(m_referenceFrame.up, m_referenceFrame.time);
     projectOrthogonal(m_referenceFrame.up, m_referenceFrame.forward);
     
-    m_referenceFrame.right = up;
-    projectOrthogonal(m_referenceFrame.right, m_referenceFrame.time);
-    projectOrthogonal(m_referenceFrame.right, m_referenceFrame.forward);
-    projectOrthogonal(m_referenceFrame.right, m_referenceFrame.up);
+    vec4 sideDir;
+    f32 maxNorm = 0;
+    for (u32 i = 0; i < 4; i++)
+    {
+        vec4 guess;
+        guess[i] = 1;
+        projectOrthogonal(guess, m_referenceFrame.time);
+        projectOrthogonal(guess, m_referenceFrame.forward);
+        projectOrthogonal(guess, m_referenceFrame.up);
+        f32 norm = fabsf(m_spacetime.g(m_referenceFrame.position, guess, guess));
+        if (norm > maxNorm)
+        {
+            maxNorm = norm;
+            sideDir = guess;
+        }
+    }
+    
+    if (0 < det(m_referenceFrame.time, m_referenceFrame.forward, m_referenceFrame.up, sideDir))
+    {
+        m_referenceFrame.right = sideDir;
+    }
+    else
+    {
+        m_referenceFrame.right = -sideDir;
+    }
     
     normalize(m_referenceFrame.time);
     normalize(m_referenceFrame.forward);
@@ -80,7 +126,7 @@ void ImageRenderer::initFrame(const vec4& time, const vec4& lookAt, const vec4& 
         for (u32 j = 0; j < 4; j++)
         {
             vec4 b;
-            switch (i)
+            switch (j)
             {
                 case 0:
                     b = m_referenceFrame.time;
@@ -99,13 +145,13 @@ void ImageRenderer::initFrame(const vec4& time, const vec4& lookAt, const vec4& 
         }
         std::cout << "\n";
     }
-    std::cout << "\n";
+    std::cout << "\n" << det(m_referenceFrame.time, m_referenceFrame.forward, m_referenceFrame.up, sideDir) << "\n";
 #endif
 }
 
 void ImageRenderer::normalize(vec4& v)
 {
-    v = v / sqrtf(abs(m_spacetime.g(m_referenceFrame.position, v, v)));
+    v = v / sqrtf(fabsf(m_spacetime.g(m_referenceFrame.position, v, v)));
 }
 
 void ImageRenderer::projectOrthogonal(vec4& a, const vec4& b)

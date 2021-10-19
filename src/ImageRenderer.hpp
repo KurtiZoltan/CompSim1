@@ -5,11 +5,13 @@
 
 struct ReferenceFrame
 {
+    ReferenceFrame(const vec4& position, const vec4& velocity, const vec4& lookAt, const vec4& up);
     vec4 position;
     vec4 time;
     vec4 forward;
     vec4 up;
     vec4 right;
+    vec4 lookAt;
 };
 
 class ImageRenderer

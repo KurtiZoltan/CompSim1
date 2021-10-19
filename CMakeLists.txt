@@ -13,6 +13,6 @@ elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     add_compile_options(-Wall -Wextra -pedantic -Wfatal-errors -fvisibility=hidden)
 endif()
 
-set(SOURCE src/main.cpp src/Spacetime.cpp src/ImageRenderer.cpp src/Schwarzschild.cpp)
+set(SOURCE src/main.cpp src/Spacetime.cpp src/ImageRenderer.cpp src/Schwarzschild.cpp src/Math.cpp)
 
 add_executable(test ${SOURCE})

@@ -1,5 +1,6 @@
 #pragma once
 #include "Utils.hpp"
+#include <iostream>
 
 struct vec4
 {
@@ -12,6 +13,12 @@ public:
         (*this)[1] = 0;
         (*this)[2] = 0;
         (*this)[3] = 0;
+    }
+    
+    vec4(f32 a, f32 b, f32 c, f32 d) :
+        components{a, b, c, d}
+    {
+        
     }
     
     vec4(const vec4& other)
@@ -29,6 +36,16 @@ public:
         (*this)[2] = other[2];
         (*this)[3] = other[3];
         return other;
+    }
+    
+    vec4 operator-()
+    {
+        vec4 ret;
+        ret[0] = -(*this)[0];
+        ret[1] = -(*this)[1];
+        ret[2] = -(*this)[2];
+        ret[3] = -(*this)[3];
+        return ret;
     }
     
     const f32& operator[](u32 i) const
@@ -81,5 +98,7 @@ public:
         return ret;
     }
     
-    friend vec4 operator*(f32 a, const vec4 v);
+    friend vec4 operator*(f32 a, const vec4& v);
 };
+
+std::ostream& operator<<(std::ostream& os, const vec4& v);
