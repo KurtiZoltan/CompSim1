@@ -1,6 +1,6 @@
-#include <cmath>
 #include "ImageRenderer.hpp"
 #include <iostream>
+#include <cmath>
 
 ReferenceFrame::ReferenceFrame(const vec4& position, const vec4& velocity, const vec4& lookAt, const vec4& up) :
     position(position), time(velocity), up(up), lookAt(lookAt)
@@ -28,8 +28,8 @@ void ImageRenderer::traceRays()
 
 void ImageRenderer::genInitialRays()
 {
-    f32 heightScale = tanf(m_fov / 2) * m_height / m_width;
-    f32 widthScale = tanf(m_fov / 2);
+    f32 heightScale = std::tan(m_fov / 2) * m_height / m_width;
+    f32 widthScale = std::tan(m_fov / 2);
     for (u32 y = 0; y < m_height; y++)
     {
         for (u32 x = 0; x < m_width; x++)
@@ -43,7 +43,7 @@ void ImageRenderer::genInitialRays()
             f32 up = (static_cast<f32>(y) / (m_height - 1) * 2 - 1) * heightScale;
             f32 right = (static_cast<f32>(x) / (m_width - 1) * 2 - 1) * widthScale;
             
-            vec4 dir = (m_referenceFrame.forward + m_referenceFrame.up * up + m_referenceFrame.right * right) / sqrtf(1 + up * up + right * right) - m_referenceFrame.time;
+            vec4 dir = (m_referenceFrame.forward + m_referenceFrame.up * up + m_referenceFrame.right * right) / std::sqrt(1 + up * up + right * right) - m_referenceFrame.time;
             
             m_rayBeginnings[index * 8 + 4] = dir[0];
             m_rayBeginnings[index * 8 + 5] = dir[1];
@@ -68,10 +68,10 @@ f32 det(const vec4& v0, const vec4& v1, const vec4& v2, const vec4& v3)
         {
             norm += v[i][j] * v[i][j];
         }
-        norm = sqrtf(norm);
+        norm = std::sqrt(norm);
         if (norm < EPSILON)
             return 0;
-        if (fabsf(v[i][i]) / norm < EPSILON)
+        if (std::abs(v[i][i]) / norm < EPSILON)
         {
             f32 maxNormRatio = -1;
             u32 maxIndex = 0;
@@ -82,8 +82,8 @@ f32 det(const vec4& v0, const vec4& v1, const vec4& v2, const vec4& v3)
                 {
                     normRatio += v[j][k] * v[j][k];
                 }
-                normRatio = sqrtf(normRatio);
-                normRatio = fabsf(v[j][i]) / normRatio;
+                normRatio = std::sqrt(normRatio);
+                normRatio = std::abs(v[j][i]) / normRatio;
                 if (normRatio > maxNormRatio)
                 {
                     maxNormRatio = normRatio;
@@ -197,7 +197,7 @@ void ImageRenderer::initFrame(const vec4& time, const vec4& lookAt, const vec4& 
 
 void ImageRenderer::normalize(vec4& v)
 {
-    v = v / sqrtf(fabsf(m_spacetime.g(m_referenceFrame.position, v, v)));
+    v = v / std::sqrt(fabsf(m_spacetime.g(m_referenceFrame.position, v, v)));
 }
 
 void ImageRenderer::projectOrthogonal(vec4& a, const vec4& b)

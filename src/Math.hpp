@@ -48,7 +48,7 @@ public:
         return ret;
     }
     
-    const f32& operator[](u32 i) const
+    f32 operator[](u32 i) const
     {
         return components[i];
     }
@@ -78,13 +78,17 @@ public:
         return ret;
     }
     
-    vec4 operator+(const vec4& v) const
+    const vec4& operator+=(const vec4& other)
     {
-        vec4 ret;
-        ret[0] = components[0] + v[0];
-        ret[1] = components[1] + v[1];
-        ret[2] = components[2] + v[2];
-        ret[3] = components[3] + v[3];
+        for (u32 i = 0; i < 4; i++)
+            (*this)[i] += other[i];
+        return *this;
+    }
+    
+    vec4 operator+(const vec4& other) const
+    {
+        vec4 ret = *this;
+        ret += other;
         return ret;
     }
     
@@ -99,6 +103,5 @@ public:
     }
     
     friend vec4 operator*(f32 a, const vec4& v);
+    friend std::ostream& operator<<(std::ostream& os, const vec4& v);
 };
-
-std::ostream& operator<<(std::ostream& os, const vec4& v);
