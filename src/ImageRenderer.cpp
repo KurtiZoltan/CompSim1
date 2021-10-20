@@ -23,6 +23,8 @@ ImageRenderer::~ImageRenderer()
 
 void ImageRenderer::genInitialRays()
 {
+    f32 heightScale = tanf(m_fov / 2) * m_height / m_width;
+    f32 widthScale = tanf(m_fov / 2);
     for (u32 y = 0; y < m_height; y++)
     {
         for (u32 x = 0; x < m_width; x++)
@@ -33,8 +35,8 @@ void ImageRenderer::genInitialRays()
             m_rayBeginnings[index * 8 + 2] = m_referenceFrame.position[2];
             m_rayBeginnings[index * 8 + 3] = m_referenceFrame.position[3];
             
-            f32 up = static_cast<f32>(y) / (m_height - 1) * 2 - 1;
-            f32 right = static_cast<f32>(x) / (m_width - 1) * 2 - 1;
+            f32 up = (static_cast<f32>(y) / (m_height - 1) * 2 - 1) * heightScale;
+            f32 right = (static_cast<f32>(x) / (m_width - 1) * 2 - 1) * widthScale;
             
             vec4 dir = (m_referenceFrame.forward + m_referenceFrame.up * up + m_referenceFrame.right * right) / sqrtf(1 + up * up + right * right) - m_referenceFrame.time;
             
