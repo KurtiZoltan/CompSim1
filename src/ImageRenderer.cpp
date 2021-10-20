@@ -53,14 +53,49 @@ f32 det(const vec4& v0, const vec4& v1, const vec4& v2, const vec4& v3)
     v[1] = v1;
     v[2] = v2;
     v[3] = v3;
+    f32 swapfactor = 1;
     for (u32 i = 0; i < 4; i++)
     {
+        f32 norm = 0;
+        for (u32 j = 0; j < 4; j++) norm += v[i][j] * v[i][j];
+        norm = sqrtf(norm);
+        if (fabsf(v[i][i]) / norm < EPSILON)
+        {
+            f32 maxNormRatio = -1;
+            u32 maxIndex = 0;
+            for (u32 j = i + 1; j < 4; j++)
+            {
+                f32 normRatio = 0;
+                for (u32 k = 0; k < 4; k++)
+                {
+                    normRatio += v[j][k] * v[j][k];
+                }
+                normRatio = sqrtf(normRatio);
+                normRatio = fabsf(v[j][i]) / normRatio;
+                if (normRatio > maxNormRatio)
+                {
+                    maxNormRatio = normRatio;
+                    maxIndex = j;
+                }
+            }
+            if (maxNormRatio > EPSILON)
+            {
+                swapfactor = -swapfactor;
+                vec4 temp = v[i];
+                v[i] = v[maxIndex];
+                v[maxIndex] = temp;
+            }
+            else
+            {
+                return 0;
+            }
+        }
         for (u32 j = i + 1; j < 4; j++)
         {
             v[j] = v[j] - v[j][i] / v[i][i] * v[i];
         }
     }
-    return v[0][0] * v[1][1] * v[2][2] * v[3][3];
+    return swapfactor * v[0][0] * v[1][1] * v[2][2] * v[3][3];
 }
 
 void ImageRenderer::initFrame(const vec4& time, const vec4& lookAt, const vec4& up)
@@ -145,7 +180,7 @@ void ImageRenderer::initFrame(const vec4& time, const vec4& lookAt, const vec4& 
         }
         std::cout << "\n";
     }
-    std::cout << "\n" << det(m_referenceFrame.time, m_referenceFrame.forward, m_referenceFrame.up, sideDir) << "\n";
+    std::cout << det(vec4(1, 3, 0, 0), vec4(3, 9, 2, 4), vec4(1, 5, 1, 2), vec4(4, 15, 1, 3)) << "\n";
 #endif
 }
 
