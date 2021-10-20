@@ -59,8 +59,13 @@ f32 det(const vec4& v0, const vec4& v1, const vec4& v2, const vec4& v3)
     for (u32 i = 0; i < 4; i++)
     {
         f32 norm = 0;
-        for (u32 j = 0; j < 4; j++) norm += v[i][j] * v[i][j];
+        for (u32 j = 0; j < 4; j++)
+        {
+            norm += v[i][j] * v[i][j];
+        }
         norm = sqrtf(norm);
+        if (norm < EPSILON)
+            return 0;
         if (fabsf(v[i][i]) / norm < EPSILON)
         {
             f32 maxNormRatio = -1;
@@ -182,7 +187,6 @@ void ImageRenderer::initFrame(const vec4& time, const vec4& lookAt, const vec4& 
         }
         std::cout << "\n";
     }
-    std::cout << det(vec4(1, 3, 0, 0), vec4(3, 9, 2, 4), vec4(1, 5, 1, 2), vec4(4, 15, 1, 3)) << "\n";
 #endif
 }
 
