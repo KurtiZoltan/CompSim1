@@ -15,7 +15,7 @@ f32 Schwarzschild::g(const vec4& position, const vec4& a, const vec4& b) const
     f32 g00 = 1 - 2 * m_M / position[1];
     f32 g11 = -1 / g00;
     f32 g22 = -position[1] * position[1];
-    f32 sintheta = sinf(position[2]);
+    f32 sintheta = std::sin(position[2]);
     f32 g33 = g22 * sintheta * sintheta;
     return g00 * a[0] * b[0] + g11 * a[1] * b[1] + g22 * a[2] * b[2] + g33 * a[3] * b[3];
 }
@@ -25,8 +25,8 @@ vec4 Schwarzschild::Gammauu(const vec4& position, const vec4& v) const
     f32 Rs = 2 * m_M;
     f32 r = position[1], theta = position[2];
     f32 v0 = v[0], v1 = v[1], v2 = v[2], v3 = v[3];
-    f32 sintheta = sinf(theta);
-    f32 costheta = cosf(theta);
+    f32 sintheta = std::sin(theta);
+    f32 costheta = std::cos(theta);
     f32 G001 = Rs / (2 * r * (r - Rs));
     f32 G100 = Rs * (r - Rs) / (2 * r * r * r);
     f32 G111 = -G001;

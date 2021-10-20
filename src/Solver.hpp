@@ -19,15 +19,17 @@ struct State
 };
 
 typedef vec4 (*Gamma)(const vec4& position, const vec4& velocity);
-typedef f32(*Object)(const vec4& position);
+typedef f32(*Intersect)(const vec4& position);
 
 struct Objects
 {
-	Object* objects;
+	Intersect* intersects;
 	f32* testValues;
 	u32 numIntersects;
 
-	Objects() = delete;
+	Objects();
+	~Objects();
+	void add(Intersect intersect);
 };
 
-State integrate(const vec4& stratPosition, const vec4& startVelocity, Gamma f, const Objects& intersections);
+State integrate(const vec4& stratPosition, const vec4& startVelocity, const Spacetime& spacetime, const Objects& objects);

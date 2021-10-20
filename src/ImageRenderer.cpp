@@ -8,12 +8,13 @@ ReferenceFrame::ReferenceFrame(const vec4& position, const vec4& velocity, const
     
 }
 
-ImageRenderer::ImageRenderer(Spacetime& spacetime, ReferenceFrame& referenceFrame, u32 width, u32 height) :
-    m_spacetime(spacetime), m_referenceFrame(referenceFrame), m_width(width), m_height(height)
+ImageRenderer::ImageRenderer(Spacetime& spacetime, Objects& objects, ReferenceFrame& referenceFrame, u32 width, u32 height, f32 fov) :
+    m_spacetime(spacetime), m_objects(objects), m_referenceFrame(referenceFrame), m_width(width), m_height(height), m_fov(fov)
 {
     m_rayBeginnings = new f32[m_width * m_height * 8 * sizeof(f32)];
     initFrame(m_referenceFrame.time, m_referenceFrame.lookAt, m_referenceFrame.up);
     genInitialRays();
+    traceRays();
 }
 
 ImageRenderer::~ImageRenderer()
@@ -23,7 +24,24 @@ ImageRenderer::~ImageRenderer()
 
 void ImageRenderer::traceRays()
 {
-
+    for (u32 y = 0; y < m_height; y++)
+    {
+        for (u32 x = 0; x < m_width; x++)
+        {
+            u32 index = m_width * y + x;
+            vec4 position;
+            position[0] = m_rayBeginnings[index * 8 + 0];
+            position[1] = m_rayBeginnings[index * 8 + 1];
+            position[2] = m_rayBeginnings[index * 8 + 2];
+            position[3] = m_rayBeginnings[index * 8 + 3];
+            vec4 velocity;
+            velocity[0] = m_rayBeginnings[index * 8 + 4];
+            velocity[1] = m_rayBeginnings[index * 8 + 5];
+            velocity[2] = m_rayBeginnings[index * 8 + 6];
+            velocity[3] = m_rayBeginnings[index * 8 + 7];
+            integrate(position, velocity, m_spacetime, m_objects);
+        }
+    }
 }
 
 void ImageRenderer::genInitialRays()
@@ -34,7 +52,7 @@ void ImageRenderer::genInitialRays()
     {
         for (u32 x = 0; x < m_width; x++)
         {
-            u32 index = (m_width * y + x);
+            u32 index = m_width * y + x;
             m_rayBeginnings[index * 8 + 0] = m_referenceFrame.position[0];
             m_rayBeginnings[index * 8 + 1] = m_referenceFrame.position[1];
             m_rayBeginnings[index * 8 + 2] = m_referenceFrame.position[2];
@@ -197,10 +215,10 @@ void ImageRenderer::initFrame(const vec4& time, const vec4& lookAt, const vec4& 
 
 void ImageRenderer::normalize(vec4& v)
 {
-    v = v / std::sqrt(fabsf(m_spacetime.g(m_referenceFrame.position, v, v)));
+    v = v / std::sqrt(std::abs(m_spacetime.g(m_referenceFrame.position, v, v)));
 }
 
 void ImageRenderer::projectOrthogonal(vec4& a, const vec4& b)
 {
-    a = a - b * m_spacetime.g(m_referenceFrame.position, a, b) / m_spacetime.g(m_referenceFrame.position, b, b);
+    a = a - m_spacetime.g(m_referenceFrame.position, a, b) / m_spacetime.g(m_referenceFrame.position, b, b) * b;
 }

@@ -58,14 +58,6 @@ const State& State::operator+=(const State& other)
 	return *this;
 }
 
-State integrate(const vec4& stratPosition, const vec4& startVelocity, Gamma f, const Objects& intersections)
-{
-	State intersection;
-	
-	
-	return intersection;
-}
-
 //RK4
 const u32 order = 4;
 const f32 a[] = {0,   0,   0, 0,
@@ -92,7 +84,7 @@ f32 calcError(const State& y1, const State& y2)
     return max;
 }
 
-void step(State (*f)(f32 t, const State& y), f32& t, State& y, f32 h)
+void step(const Spacetime& spacetime, f32& t, State& y, f32 h)
 {
     State yprime;
 	State k[order];
@@ -104,42 +96,91 @@ void step(State (*f)(f32 t, const State& y), f32& t, State& y, f32 h)
         {
             dy += a[i * order + j] * k[j];
         }
-        k[i] = f(t + h * c[i], y + h * dy);
+        State temp = y + h * dy;
+        k[i].position = temp.velocity;
+        k[i].velocity = spacetime.Gammauu(temp.position, temp.velocity);
         yprime += b[i] * k[i];
     }
     y += h * yprime;
     t += h;
 }
 
-State fasteqsolver(State (*f)(f32 t, const State& y), f32 t0, const State& y0, f32 h0, f32 tfinal)
+State eqsolver(const Spacetime& spacetime, f32 t0, const State& y0, f32 h0, f32 tfinal, const Objects& objects)
 {
     f32 t = t0;
     f32 h = h0;
     State y = y0;
+    for (u32 i = 0; i < objects.numIntersects; i++)
+    {
+        objects.testValues[i] = objects.intersects[i](y.position);
+    }
     
-    State* k = new State[order];
-    State dy;
-    f32 t1, t2;
-    State y1, y2;
-    f32 error;
     while (t < tfinal)
     {
-        t1 = t2 = t;
-        y1 = y2 = y;
-        step(f, t1, y1, h);
-        step(f, t1, y1, h);
-        step(f, t2, y2, 2*h);
+        f32 t1 = t, t2 = t;
+        State y1 =y, y2 = y;
+        step(spacetime, t1, y1, h);
+        step(spacetime, t1, y1, h);
+        step(spacetime, t2, y2, 2*h);
         
-        error = calcError(y1, y2);
+        f32 error = calcError(y1, y2);
 		
         if (error < 1)
         {
-            //test collisions
+            for (u32 i = 0; i < objects.numIntersects; i++)
+            {
+                f32 test = objects.intersects[i](y.position);
+                if (test * objects.testValues[i] <= 0)
+                {
+                    #ifndef NDEBUG
+                    std::cout << "Intersect with object " << i << "!\n";
+                    #endif
+                    return y;
+                }
+                objects.testValues[i] = test;
+            }
             t = t1;
             y = y1;
         }
-        h = h / std::min(std::pow(error / errorGoal, 1/errorOrder), 0.5f);
+        h = h / std::max(std::pow(error / errorGoal, 1/errorOrder), 0.5f);
     }
-    delete[] k;
 	return y;
+}
+
+State integrate(const vec4& stratPosition, const vec4& startVelocity,  const Spacetime& spacetime, const Objects& objects)
+{
+    State start;
+    start.position = stratPosition;
+    start.velocity = startVelocity;
+	return eqsolver(spacetime, 0, start, 1, 10, objects);
+}
+
+Objects::Objects() : 
+    intersects(nullptr), testValues(nullptr), numIntersects(0)
+{
+    
+}
+
+Objects::~Objects()
+{
+    delete[] intersects;
+    delete[] testValues;
+}
+
+void Objects::add(Intersect intersect)
+{
+    Intersect* newIntersects = new Intersect[numIntersects + 1];
+    f32* newTestalues = new f32[numIntersects + 1];
+    for (u32 i = 0; i < numIntersects; i++)
+    {
+        newIntersects[i] = intersects[i];
+        newTestalues[i] = testValues[i];
+    }
+    numIntersects++;
+    newIntersects[numIntersects] = intersect;
+    newTestalues[numIntersects] = 1;
+    delete[] intersects;
+    delete[] testValues;
+    intersects = newIntersects;
+    testValues = newTestalues;
 }
