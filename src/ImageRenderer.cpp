@@ -21,6 +21,11 @@ ImageRenderer::~ImageRenderer()
     delete[] m_rayBeginnings;
 }
 
+void ImageRenderer::traceRays()
+{
+
+}
+
 void ImageRenderer::genInitialRays()
 {
     f32 heightScale = tanf(m_fov / 2) * m_height / m_width;

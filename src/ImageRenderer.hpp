@@ -1,7 +1,9 @@
 #pragma once
-#include "Spacetime.hpp"
+
 #include "Utils.hpp"
 #include "Math.hpp"
+#include "Spacetime.hpp"
+#include "Solver.hpp"
 
 struct ReferenceFrame
 {
@@ -20,12 +22,14 @@ class ImageRenderer
     ReferenceFrame& m_referenceFrame;
     f32 m_fov;
     u32 m_width, m_height;
-    f32* m_rayBeginnings;
+
     void normalize(vec4& v);
     void projectOrthogonal(vec4& a, const vec4& b);
-public:
-    ImageRenderer(Spacetime& spacetime, ReferenceFrame& referenceFrame, u32 width, u32 height);
-    ~ImageRenderer();
     void genInitialRays();
     void initFrame(const vec4& time, const vec4& lookAt, const vec4& up);
+public:
+    f32* m_rayBeginnings;
+    ImageRenderer(Spacetime& spacetime, ReferenceFrame& referenceFrame, u32 width, u32 height);
+    ~ImageRenderer();
+    void traceRays();
 };
