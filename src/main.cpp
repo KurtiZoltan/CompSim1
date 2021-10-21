@@ -38,6 +38,6 @@ int main()
     Objects objects;
     objects.add(eventHorizon, eventHorizonColor);
     objects.add(skySphere, skyColor);
-    ReferenceFrame referenceFrame(vec4(0, 3.5 * 2 * M, 3.14/2, 0), vec4(1, 0, 0, 0.1), vec4(0, -1, 0, 0), vec4(0, 0, -1, 0));
+    ReferenceFrame referenceFrame(vec4(0, 3.5 * 2 * M, 3.14/2, 0), vec4(1, 0, 0, 0), vec4(0, -1, -0.1, 0), vec4(0, 0, -1, 0));
 	ImageRenderer renderer(spacetime, objects, referenceFrame, 1024, 1024, 3.141592/2);
 }

@@ -25,6 +25,7 @@ ImageRenderer::~ImageRenderer()
 
 void ImageRenderer::traceRays()
 {
+    const char* outName = "../pic/test.tif";
     u8* image  = new u8[m_width * m_height * 3];
     for (u32 y = 0; y < m_height; y++)
     {
@@ -48,7 +49,26 @@ void ImageRenderer::traceRays()
             image[index * 3 + 2] = color.b;
         }
     }
-    
+    std::cout << "Writing " << outName << ".\n";
+    TIFF* tif = TIFFOpen(outName, "w");
+    if (!tif)
+    {
+        std::cout << "TIFF could not be written, try creating the ../pic folder.\n";
+        throw 1;
+    }
+    TIFFSetField(tif, TIFFTAG_IMAGEWIDTH, m_width);
+    TIFFSetField(tif, TIFFTAG_IMAGELENGTH, m_height);
+    TIFFSetField(tif, TIFFTAG_SAMPLESPERPIXEL, 3);
+    TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, 8);
+    TIFFSetField(tif, TIFFTAG_ORIENTATION, ORIENTATION_BOTLEFT);
+    TIFFSetField(tif, TIFFTAG_PLANARCONFIG, PLANARCONFIG_CONTIG);
+    TIFFSetField(tif, TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_RGB);
+    TIFFSetField(tif, TIFFTAG_COMPRESSION, 1);
+    for (u32 i = 0; i < m_height; i++)
+    {
+        TIFFWriteScanline(tif, image + i * (3 * m_width), i, 0);
+    }
+    TIFFClose(tif);
     delete[] image;
 }
 
