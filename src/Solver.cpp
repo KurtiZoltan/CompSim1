@@ -105,7 +105,7 @@ void step(const Spacetime& spacetime, f32& t, State& y, f32 h)
     t += h;
 }
 
-State eqsolver(const Spacetime& spacetime, f32 t0, const State& y0, f32 h0, f32 tfinal, const Objects& objects)
+RGB eqsolver(const Spacetime& spacetime, f32 t0, const State& y0, f32 h0, f32 tfinal, const Objects& objects)
 {
     f32 t = t0;
     f32 h = h0;
@@ -135,7 +135,7 @@ State eqsolver(const Spacetime& spacetime, f32 t0, const State& y0, f32 h0, f32 
                     #ifndef NDEBUG
                     std::cout << "Intersect with object " << i << "!\n";
                     #endif
-                    return y;
+                    return objects.colors[i](y);
                 }
                 objects.testValues[i] = test;
             }
@@ -144,19 +144,23 @@ State eqsolver(const Spacetime& spacetime, f32 t0, const State& y0, f32 h0, f32 
         }
         h = h / std::max(std::pow(error / errorGoal, 1/errorOrder), 0.5f);
     }
-	return y;
+    RGB ret;
+    ret.r = 0;
+    ret.g = 0;
+    ret.b = 0;
+	return ret;
 }
 
-State integrate(const vec4& stratPosition, const vec4& startVelocity,  const Spacetime& spacetime, const Objects& objects)
+RGB trace(const vec4& stratPosition, const vec4& startVelocity,  const Spacetime& spacetime, const Objects& objects)
 {
     State start;
     start.position = stratPosition;
     start.velocity = startVelocity;
-	return eqsolver(spacetime, 0, start, 1, 10, objects);
+	return eqsolver(spacetime, 0, start, 1, 100, objects);
 }
 
 Objects::Objects() : 
-    intersects(nullptr), testValues(nullptr), numIntersects(0)
+    intersects(nullptr), colors(nullptr), testValues(nullptr), numIntersects(0)
 {
     
 }
@@ -167,20 +171,25 @@ Objects::~Objects()
     delete[] testValues;
 }
 
-void Objects::add(Intersect intersect)
+void Objects::add(Intersect intersect, Color color)
 {
     Intersect* newIntersects = new Intersect[numIntersects + 1];
+    Color* newColors = new Color[numIntersects + 1];
     f32* newTestalues = new f32[numIntersects + 1];
     for (u32 i = 0; i < numIntersects; i++)
     {
         newIntersects[i] = intersects[i];
+        newColors[i] = colors[i];
         newTestalues[i] = testValues[i];
     }
-    numIntersects++;
     newIntersects[numIntersects] = intersect;
+    newColors[numIntersects] = color;
     newTestalues[numIntersects] = 1;
+    numIntersects++;
     delete[] intersects;
+    delete[] colors;
     delete[] testValues;
     intersects = newIntersects;
+    colors = newColors;
     testValues = newTestalues;
 }

@@ -1,4 +1,5 @@
 #include "ImageRenderer.hpp"
+#include "tiffio.h"
 #include <iostream>
 #include <cmath>
 
@@ -24,6 +25,7 @@ ImageRenderer::~ImageRenderer()
 
 void ImageRenderer::traceRays()
 {
+    u8* image  = new u8[m_width * m_height * 3];
     for (u32 y = 0; y < m_height; y++)
     {
         for (u32 x = 0; x < m_width; x++)
@@ -39,9 +41,15 @@ void ImageRenderer::traceRays()
             velocity[1] = m_rayBeginnings[index * 8 + 5];
             velocity[2] = m_rayBeginnings[index * 8 + 6];
             velocity[3] = m_rayBeginnings[index * 8 + 7];
-            integrate(position, velocity, m_spacetime, m_objects);
+            
+            RGB color = trace(position, velocity, m_spacetime, m_objects);
+            image[index * 3 + 0] = color.r;
+            image[index * 3 + 1] = color.g;
+            image[index * 3 + 2] = color.b;
         }
     }
+    
+    delete[] image;
 }
 
 void ImageRenderer::genInitialRays()
