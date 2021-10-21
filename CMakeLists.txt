@@ -16,7 +16,8 @@ endif()
 file(GLOB SOURCE "src/*.cpp" "src/*.hpp")
 
 find_package(TIFF REQUIRED)
+find_package(OpenMP REQUIRED)
 
 add_executable(test ${SOURCE})
-target_link_libraries(test PRIVATE ${TIFF_LIBRARIES})
+target_link_libraries(test PRIVATE ${TIFF_LIBRARIES} PRIVATE OpenMP::OpenMP_CXX)
 target_include_directories(test PRIVATE ${TIFF_INCLUDE_DIR})

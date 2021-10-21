@@ -14,8 +14,6 @@ ImageRenderer::ImageRenderer(Spacetime& spacetime, Objects& objects, ReferenceFr
 {
     m_rayBeginnings = new f32[m_width * m_height * 8 * sizeof(f32)];
     initFrame(m_referenceFrame.time, m_referenceFrame.lookAt, m_referenceFrame.up);
-    genInitialRays();
-    traceRays();
 }
 
 ImageRenderer::~ImageRenderer()
@@ -23,12 +21,14 @@ ImageRenderer::~ImageRenderer()
     delete[] m_rayBeginnings;
 }
 
-void ImageRenderer::traceRays()
+void ImageRenderer::traceRays(const char* file)
 {
-    const char* outName = "../pic/test.tif";
+    genInitialRays();
     u8* image  = new u8[m_width * m_height * 3];
+    #pragma omp parallel for
     for (u32 y = 0; y < m_height; y++)
     {
+        #pragma omp simd
         for (u32 x = 0; x < m_width; x++)
         {
             u32 index = m_width * y + x;
@@ -49,8 +49,8 @@ void ImageRenderer::traceRays()
             image[index * 3 + 2] = color.b;
         }
     }
-    std::cout << "Writing " << outName << ".\n";
-    TIFF* tif = TIFFOpen(outName, "w");
+    std::cout << "Writing " << file << ".\n";
+    TIFF* tif = TIFFOpen(file, "w");
     if (!tif)
     {
         std::cout << "TIFF could not be written, try creating the ../pic folder.\n";

@@ -92,6 +92,7 @@ void step(const Spacetime& spacetime, f32& t, State& y, f32 h)
     {
         State dy;
 		dy.clear();
+        #pragma omp simd
         for (u32 j = 0; j < i; j++)
         {
             dy += a[i * order + j] * k[j];
@@ -145,9 +146,9 @@ RGB eqsolver(const Spacetime& spacetime, f32 t0, const State& y0, f32 h0, f32 tf
         h = h / std::max(std::pow(error / errorGoal, 1/errorOrder), 0.5f);
     }
     RGB ret;
-    ret.r = 0;
+    ret.r = 255;
     ret.g = 0;
-    ret.b = 0;
+    ret.b = 255;
 	return ret;
 }
 
@@ -156,7 +157,7 @@ RGB trace(const vec4& stratPosition, const vec4& startVelocity,  const Spacetime
     State start;
     start.position = stratPosition;
     start.velocity = startVelocity;
-	return eqsolver(spacetime, 0, start, 1, 100, objects);
+	return eqsolver(spacetime, 0, start, 1, 10000, objects);
 }
 
 Objects::Objects() : 

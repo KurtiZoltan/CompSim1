@@ -32,5 +32,5 @@ public:
     f32* m_rayBeginnings;
     ImageRenderer(Spacetime& spacetime, Objects& objects, ReferenceFrame& referenceFrame, u32 width, u32 height, f32 fov);
     ~ImageRenderer();
-    void traceRays();
+    void traceRays(const char* file);
 };
