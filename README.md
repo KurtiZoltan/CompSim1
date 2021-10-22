@@ -10,3 +10,4 @@ cmake .. -DCMAKE_BUILD_TYPE=Release
 make
 ./trace
 ```
+After this the result will be saed in the CompSim1/pic folder.
