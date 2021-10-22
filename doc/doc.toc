@@ -4,5 +4,10 @@
 \contentsline {subsection}{\numberline {2.2}Observers in general relativity}{4}{subsection.2.2}%
 \contentsline {subsection}{\numberline {2.3}The Schwarzschild black hole}{4}{subsection.2.3}%
 \contentsline {section}{\numberline {3}Program description and results}{5}{section.3}%
-\contentsline {subsection}{\numberline {3.1}Differential equation solver}{6}{subsection.3.1}%
-\contentsline {section}{\numberline {4}conclusion}{6}{section.4}%
+\contentsline {subsection}{\numberline {3.1}General structure}{5}{subsection.3.1}%
+\contentsline {subsubsection}{\numberline {3.1.1}Vierbein calculation}{6}{subsubsection.3.1.1}%
+\contentsline {subsubsection}{\numberline {3.1.2}Initial condition generation}{6}{subsubsection.3.1.2}%
+\contentsline {subsubsection}{\numberline {3.1.3}Differential equation solver}{7}{subsubsection.3.1.3}%
+\contentsline {subsubsection}{\numberline {3.1.4}$\theta $-$\phi $ checkerboard}{7}{subsubsection.3.1.4}%
+\contentsline {subsubsection}{\numberline {3.1.5}Redshift}{7}{subsubsection.3.1.5}%
+\contentsline {section}{\numberline {4}Conclusion}{8}{section.4}%

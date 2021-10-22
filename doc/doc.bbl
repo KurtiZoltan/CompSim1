@@ -16,4 +16,10 @@ Ed~Fomalont, Sergei Kopeikin, Dayton Jones, Mareki Honma, and Oleg Titov.
 \newblock Proceedings of the International Astronomical Union,
   5(S261):291–295, 2009
 
+\bibitem{recipies}
+William~H. Press, Saul~A. Teukolsky, William~T. Vetterling, and Brian~P.
+  Flannery.
+\newblock {\em Numerical Recipes in C\/}.
+\newblock Cambridge University Press, Cambridge, USA, second edition, 1992
+
 \end{thebibliography}

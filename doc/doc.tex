@@ -36,6 +36,33 @@
 \newcommand{\aeqref}[1]{\az{\eqref{#1}}}
 \newcommand{\Aeqref}[1]{\Az{\eqref{#1}}}
 
+%---------------------------------------------------------------------------------------------------------------------
+\usepackage{fancyvrb,newverbs,xcolor}
+
+\definecolor{cverbbg}{gray}{0.93}
+
+\newenvironment{cverbatim}
+ {\SaveVerbatim{cverb}}
+ {\endSaveVerbatim
+  \flushleft\fboxrule=0pt\fboxsep=.5em
+  \colorbox{cverbbg}{\BUseVerbatim{cverb}}%
+  \endflushleft
+}
+\newenvironment{lcverbatim}
+ {\SaveVerbatim{cverb}}
+ {\endSaveVerbatim
+  \flushleft\fboxrule=0pt\fboxsep=.5em
+  \colorbox{cverbbg}{%
+    \makebox[\dimexpr\linewidth-2\fboxsep][l]{\BUseVerbatim{cverb}}%
+  }
+  \endflushleft
+}
+
+\newcommand{\ctexttt}[1]{\colorbox{cverbbg}{\texttt{#1}}}
+\newverbcommand{\cverb}
+  {\setbox\verbbox\hbox\bgroup}
+  {\egroup\colorbox{cverbbg}{\box\verbbox}}
+%---------------------------------------------------------------------------------------------------------------------
 %\frenchspacing
 \begin{document}
 
@@ -92,16 +119,37 @@
 			\end{aligned}
 		\end{equation}
 	\section{Program description and results}
-		The program was written in C++, and uses only two external libraries, LibTIFF to write images to disc and OpenMP to parallelize for loops.
+		The program was written in C++, and uses only two external libraries, LibTIFF to write images to disc and OpenMP to parallelize for loops. The code can be downloaded from \url{https://github.com/KurtiZoltan/CompSim1}.
 		
-		The program was designed to be easily extendable, any spacetime geometry can be represented just by implementing a child class of the pure virtual Spacetime class. An arbitrary number of displayable objects can be used. Their geometry is defined by scalar valued functions of the spacetime coordinates, negative values indicating the inside of the objects and zero the surface. The pixel color of a hit is calculated by another function that is a function of the spacetime coordinates along with the velocity vector of the light ray at the time of the hit. These two functions are provided by the user and added to an object of class Objects containing data relevant to intersection calculations. This allows for the calculation of both gravitational ad special relativistic red/blueshift via comparing the time component of the velocity vector in the observer reference frame and in the reference frame corresponding to the object that is hit. These time components of velocity vectors are linearly proportional to the frequency of the light (they are just the $\omega$ in a local planewave corresponding to the ray), therefore
+		The program was designed to be easily extendable, any spacetime geometry can be represented just by implementing a child class of the pure virtual Spacetime class. An arbitrary number of displayable objects can be used. Their geometry is defined by scalar valued functions of the spacetime coordinates, negative values indicating the inside of the objects and zero the surface. The pixel color of a hit is calculated by another function that is a function of the spacetime coordinates along with the velocity vector of the light ray at the time of the hit. These two functions are provided by the user and added to an object of class Objects containing data relevant to intersection calculations.
+	\subsection{General structure}
+		The user has to provide an implementation of the abstract class Spacetime, provide the intersection and color functions corresponding to each object, give some initial data about the reference frame and camera. After these steps the program is ready to render the image seen by the camera.
+	\subsubsection{Vierbein calculation}
+		First based on the initial data provided to the reference frame, the proper vierbein corresponding to the observer is calculated. This requires the metric tensor with which using orthogonal projections the \ctexttt{lookAt} vector is projected with the \ctexttt{time} vector to obtain the \ctexttt{forward} vector. The \ctexttt{up} vector is both projected with the \ctexttt{time} and \ctexttt{forward} vectors to obtain the true \ctexttt{up} vector. Finally the four basis vectors are all projected with all three previous vectors, \ctexttt{time}, \ctexttt{forward}, \ctexttt{up}. The biggest norm out of theses is choosen for maximal numeric accuracy. This vector is parallel to the \ctexttt{right} direction. The sign is determined by the determinant of the four vectors, this ensures that the vierbein is right handed. As a final step the vectors are normalized, this completes the calculation of the vierbein representing the observer.
+	\subsubsection{Initial condition generation}
+		The next step is the determination of the initial conditions corresponding to the pixels of the camera. The initial position is dimply the position of the camera, while the initial velocity is calculated according to the following formula:
+		\begin{equation}
+			\ctexttt{dir} = \frac{\ctexttt{forward} + u\ctexttt{up} + r\ctexttt{right}}{\sqrt{1 + u^2 + r^2}} - \ctexttt{time},
+		\end{equation}
+		where $u$ and $r$ represent the pixel coordinates calculated based on the field of view and the resolution of the image,
+		\begin{equation}
+		\begin{aligned}
+			\ctexttt{r} &= \tan\left(\frac{\ctexttt{FOV}}{2}\right)\left(\frac{\ctexttt{2x}}{\ctexttt{width} - 1} - 1\right)\\
+			\ctexttt{u} &= \tan\left(\frac{\ctexttt{FOV}}{2}\right)\left(\frac{\ctexttt{2y}}{\ctexttt{height} - 1} - 1\right)\frac{\ctexttt{height}}{\ctexttt{width}}\\.
+		\end{aligned}
+		\end{equation}
+		This means that the time component of the light ray in the observer's reference frame is always $1$, wich will be useful when calculating redshifts. The initial conditions are stored in an array. This makes it possible to move the initial condition data to the GPU in one step, allowing the use of massive parallelism provided by GPUs to integrate the equations of motion. However this is not done in the software, all calculations are done on the CPU.
+	\subsubsection{Differential equation solver}
+		The next step is to integrate the equations of motion for each initial condition, while checking for possible hits with the user provided objects. If a hit is found, the color is computed with the user provided color function corresponding to the hit and returned. The differential equation solver is capable of implementing a general forward Runge-Kutta method based on the A matrix, b and c vectors to solve the equation $y^\prime(t) = f(t, y)$. The A matrix contains the information about how to calculate the $y$ value for the current $f$ evaluation based on the previous $f$ estimates, the b vector contains the weights about how to combine the derivative estimates to give the final estimate used for the time step, and the c vector contains the t parameter increments to be used in each step evaluating $f$. The notation used for A b and c agrees with the notation used in \cite{recipies}.
+	\subsubsection{$\theta$-$\phi$ checkerboard}
+		
+	\subsubsection{Redshift}
+		The calculation of both gravitational and special relativistic red/blueshift is possible via comparing the time component of the velocity vector in the observer reference frame and in the reference frame corresponding to the object that is hit. These time components of velocity vectors are linearly proportional to the frequency of the light (they are just the $\omega$ in a local plane wave corresponding to the ray), therefore
 		\begin{equation}
 			\frac{f_{\text{observed}}}{f_{\text{source}}} = \frac{\tensor{e}{_o_0^\mu}\tensor{v}{_o_\mu}}{\tensor{e}{_s_0^\mu}\tensor{v}{_s_\mu}}.
 		\end{equation}
 		$\tensor{e}{_o_0^\mu}$ and $\tensor{e}{_s_0^\mu}$ are the 0th vierbein vectors of the observer and source respectively, $\tensor{v}{_o^\mu}$ and $\tensor{v}{_s^\mu}$ are the velocity vectors of the light ray at the observer and source respectively, connected by parallel transport along the light ray. This does not mean any additional calculations, since the velocity vector of a geodesic is automatically parallel transported along the geodesic, so the velocity vector in the initial condition and at the last timestep of the integration are sufficient. If the initial condition generation algorithm guarantees the length of the time component in the observer's reference frame, redshift can be easily calculated just with the result of numerical integration and the 4-velocity vector of the source at the hit point. 
-	\subsection{Differential equation solver}
-		The differential equation solver is capable of implementing a general forward Runge-Kutta method based on the A matrix, b and c vectors to solve the equation $y^\prime(t) = f(t, y)$. The A matrix contains the information about how to calculate the $y$ value for the current $f$ evaluation based on the previous $f$ estimates, the b vector contains the weights about how to combine the derivative estimates to give the final estimate used for the time step, and the c vector contains the t parameter increments to be used in each step evaluating $f$.
-	\section{conclusion}
+	\section{Conclusion}
 		
 	\bibliographystyle{abeld}
     \bibliography{ref}
