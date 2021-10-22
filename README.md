@@ -11,3 +11,4 @@ make
 ./trace
 ```
 After this the result will be saed in the CompSim1/pic folder.
+Depends on OpenMP and LibTIFF
