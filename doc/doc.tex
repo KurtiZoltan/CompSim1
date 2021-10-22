@@ -204,17 +204,19 @@
 			\caption{An image with and without the angle correction step after the collision is determined.}
 			\label{anglecorrection}
 		\end{figure}
+		As expected the angle corrected version is a much clearer and more accurate image. The reason for the fuzzy edges in the image without angle correction is that the endpoints of the integration of each ray has a little randomness. The reason is that stepsize is finite, and the so the distance traveled after the true intersection with the outer sphere will vary. This causes the estimated angles to also vary a bit, leading to fuzzy edges.
 	\subsubsection{Redshift}
 		\begin{figure}[H]
 			\begin{tabular}{cc}
-				\subcaptionbox{A}{\includegraphics[scale=0.9]{./figs/frontRedshift.pdf}}&
-				\subcaptionbox{B}{\includegraphics[scale=0.9]{./figs/backRedshift.pdf}}\\
-				\subcaptionbox{C}{\includegraphics[scale=0.9]{./figs/outRedshift.pdf}}&
-				\subcaptionbox{D}{\includegraphics[scale=0.9]{./figs/sideRedshift.pdf}}
+				\subcaptionbox{Forward facing camera.}{\includegraphics[scale=0.9]{./figs/frontRedshift.pdf}}&
+				\subcaptionbox{Backwards facing camera.}{\includegraphics[scale=0.9]{./figs/backRedshift.pdf}}\\
+				\subcaptionbox{Outwards facing camera.}{\includegraphics[scale=0.9]{./figs/outRedshift.pdf}}&
+				\subcaptionbox{Sideways facing camera.}{\includegraphics[scale=0.9]{./figs/sideRedshift.pdf}}
 			\end{tabular}
-			\caption{}
+			\caption{Images from a camera moving at relativistic speeds in the photon sphere and facing in different directions representing the amount of redshift observed.}
 			\label{redshift}
 		\end{figure}
+		The cameras in figure \ref{redshift} are all moving at the same speed with no radial velocity component, located at the photon sphere. The red and green colors represent the amount of redshift in the direction of each pixel. The event horizon is expected to be a straight line here, because at the photon spheres light can orbit the black hole. Whether or not the ligh tray falls into the black hole or not depends entirely on the elevation with respect to the event horizon, resulting in the aforementioned straight line. In the pictures except the third one the solid red regions correspond to the event horizon. Light coming from there is infinitely redshifted. In the simulation this redshift is a finite value mainly determined by how close the light rays get to the event horizon before the simulation is terminated.
 	\section{Conclusion}
 		
 	\bibliographystyle{abeld}
