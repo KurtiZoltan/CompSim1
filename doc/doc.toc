@@ -1,1 +1,8 @@
-\contentsline {section}{\numberline {1}Introduction}{2}%
+\contentsline {section}{\numberline {1}Introduction}{3}{section.1}%
+\contentsline {section}{\numberline {2}Theoretical background}{3}{section.2}%
+\contentsline {subsection}{\numberline {2.1}Light rays}{3}{subsection.2.1}%
+\contentsline {subsection}{\numberline {2.2}Observers in general relativity}{4}{subsection.2.2}%
+\contentsline {subsection}{\numberline {2.3}The Schwarzschild black hole}{4}{subsection.2.3}%
+\contentsline {section}{\numberline {3}Program description and results}{5}{section.3}%
+\contentsline {subsection}{\numberline {3.1}Differential equation solver}{6}{subsection.3.1}%
+\contentsline {section}{\numberline {4}conclusion}{6}{section.4}%

@@ -73,7 +73,7 @@ RGB skyColor(const State& state)
     f32 theta = std::atan2(std::sqrt(dirx * dirx + diry * diry), dirz);
     f32 phi = std::atan2(diry, dirx);
     
-    f32 scale = 6 / PI;
+    f32 scale = 20 / PI;
     
     bool n1 = (theta * scale - std::floor(theta * scale)) < 0.5;
     bool n2 = (phi * scale - std::floor(phi * scale)) < 0.5;
@@ -99,7 +99,7 @@ int main()
     Objects objects;
     objects.add(eventHorizon, eventHorizonColor);
     objects.add(skySphere, skyColor);
-    ReferenceFrame referenceFrame(vec4(0, 1.5 * 2 * M, PI/2, 0), vec4(1, 0, 0, 0), vec4(0, 0, 0, 1), vec4(0, 0, -1, 0));
+    ReferenceFrame referenceFrame(vec4(0, 40 * 2 * M, PI/2, 0), vec4(1, 0, 0, 0), vec4(0, -1, 0, 0), vec4(0, 0, -1, 0));
 	ImageRenderer renderer(spacetime, objects, referenceFrame, 1024, 1024, 70 * PI / 180);
     renderer.traceRays("../pic/test.tif");
 }

@@ -14,6 +14,7 @@
 \usepackage{graphicx}
 \usepackage{braket}
 \usepackage{tensor}
+\usepackage{hyperref}
 
 %\usepackage{listings}
 
@@ -47,9 +48,61 @@
 	\thispagestyle{empty}
 	\newpage
 	\tableofcontents
-	
+	\newpage
 	\section{Introduction}
-	
+		Modeling light transport in the framework of general relativity is an important topic in physics. Modern observatories allow multiple different measurements that can be compared to predictions of general relativity about light transport. \cite{quasar, test1} These type of measurements are among the most important experimental confirmations of general relativity. Gravitational lensing can generally be divided into two categories, strong and weak gravitational lensing. In our work we focus on strong gravitational lensing using numerical methods. This category of lensing is important for understanding observations about distant massive compact objects like neutron stars and black holes. Resolution of light originating from the strongly lensing region of nearby supermassive black holes is now possible thanks to the Event Horizon Telescope collaboration. 
+	\section{Theoretical background}
+	\subsection{Light rays}
+		We will use $(+,-,-,-)$ sign convention during this project. In the document Greek indices run from 0 to 3, latin indices in general run from 1 to 3 except when they index a vierbein vector in which case they run from 0 to 3, the 0th vector being timelike.
+		
+		We modeled light in the geometric optics approximation, meaning light is descried by light rays. These light rays in general relativity correspond to null geodesics.
+		
+		The equation to be solved is therefore
+		\begin{equation}
+			\frac{\mathrm{d}^2\tensor{x}{^\mu}}{\mathrm{d} t^2} + \tensor{\Gamma}{^\mu_\alpha_\beta}\frac{\mathrm{d}\tensor{x}{^\alpha}}{\mathrm{d}t}\frac{\mathrm{d}\tensor{x}{^\beta}}{\mathrm{d}t}= 0,
+			\label{geodesic}
+		\end{equation}
+		with initial conditions $x^\mu(0) = x_0^\mu$ and $\frac{\mathrm{d}\tensor{x}{^\mu}}{\mathrm{d} t}(0) = \tensor{v}{^\mu}$ where $\tensor{v}{^\mu} \tensor{v}{_\mu} = 0$ in order for the geodesic to be null. In this case we want to integrate this equation backwards in time since the information we have is the direction and position of the ray when it hit the camera. From this information we have to determine the first intersection of the light ray of an object of interest that we want to visualize. This can be achieved with forward integration methods using $v_0^0 < 0$.
+	\subsection{Observers in general relativity}
+		Observers or cameras in this case can be described with a point $p_0$ in spacetime and a vierbein $\tensor{e}{_a^\mu}$ at that point $p_0$. $\tensor{e}{_0^\mu}$ is a future timelike vector, corresponding to the 4-velocity of the observer. The rest of the four vierbein vectors represent the $x$ $y$ and $z$ coordinates of the observer. For the camera $x$ is the forward direction, $y$ is the up direction and $z$ is the right direction. These four vectors have to be orthogonal to each other, this way they describe a local coordinate system that is like the usual $(t,x,y,z)$ coordinate system used in special relativity:
+		\begin{equation}
+			\tensor{e}{_a^\mu}\tensor{e}{_b_\mu} = \tensor{\eta}{_a_b}
+			\label{viebein}
+		\end{equation}
+		where $\tensor{\eta}{_a_b} = \mathrm{diag}\left(1,-1,-1,-1\right)$ is the metric tensor from special relativity in $(t,x,y,z)$ coordinates.
+		
+		Int this local coordinate system the construction of a virtual screen is possible knowing the screen resolution and field of view. Choosing a pixel on this screen the corresponding light ray will have spatial velocity components equal to that of the pixel's, and a negative time component chosen such that the velocity vector is a past null vector. This velocity together with the position of the camera are the initial conditions of the geodesic equation. This formalism automatically includes all special relativistic effects on the directions of light rays, relativistic aberration is well illustrated by images generated based on this camera system.
+	\subsection{The Schwarzschild black hole}
+		Einstein's equations can be solved for the vacuum case assuming spherical and time translation symmetry. This solution is called the Schwarzschild solution. Many coordinate systems are used to describe this solution. In our choice the metric tensor is
+		\begin{equation}
+			ds^2=\left(1-\frac{2GM}{rc^2}\right)c^2dt^2 - \frac{1}{1-\frac{2GM}{rc^2}}dr^2 - r^2d\theta^2 - r^2\sin^2\left(\theta\right)d\phi^2.
+		\end{equation}
+		This choice has the advantage that the formulas are easy to compute, everything is expressed in elementary functions and that for large values of $r$ it is a good match for the usual spherical coordinates, which will be useful to approximate the intersection of light rays with the celestial sphere. The main disadvantage of theis coordinate system is that it is singular at the event horizon, meaning that numeric solutions can't cross it and the stepsize required to remain precise approach 0. This is not a problem if the camera stays outside the event horizon.
+		
+		The non-zero components of the Christoffel-symbols up to symmetry in the last two indices are
+		\begin{equation}
+			\begin{aligned}
+				\tensor{\Gamma}{^t_r_t} &= -\tensor{\Gamma}{^r_r_r} = \frac{r_s}{2r\left(r-r_s\right)}\\
+				\tensor{\Gamma}{^r_t_t} &= \frac{r_s\left(r-r_s\right)}{2r^3}\\
+				\tensor{\Gamma}{^r_\phi_\phi} &= \left(r_s-r\right)\sin^2\left(\theta\right)\\
+				\tensor{\Gamma}{^r_\theta_\theta} &= r_s - r\\
+				\tensor{\Gamma}{^\theta_r_\theta} &= \tensor{\Gamma}{^\phi_r_\phi} = \frac{1}{r}\\
+				\tensor{\Gamma}{^\theta_\phi_\phi} &= -\sin\left(\theta\right)\cos\left(\theta\right)\\
+				\tensor{\Gamma}{^\phi_\theta_\phi} &= \cot\left(\theta\right).
+			\end{aligned}
+		\end{equation}
+	\section{Program description and results}
+		The program was written in C++, and uses only two external libraries, LibTIFF to write images to disc and OpenMP to parallelize for loops.
+		
+		The program was designed to be easily extendable, any spacetime geometry can be represented just by implementing a child class of the pure virtual Spacetime class. An arbitrary number of displayable objects can be used. Their geometry is defined by scalar valued functions of the spacetime coordinates, negative values indicating the inside of the objects and zero the surface. The pixel color of a hit is calculated by another function that is a function of the spacetime coordinates along with the velocity vector of the light ray at the time of the hit. These two functions are provided by the user and added to an object of class Objects containing data relevant to intersection calculations. This allows for the calculation of both gravitational ad special relativistic red/blueshift via comparing the time component of the velocity vector in the observer reference frame and in the reference frame corresponding to the object that is hit. These time components of velocity vectors are linearly proportional to the frequency of the light (they are just the $\omega$ in a local planewave corresponding to the ray), therefore
+		\begin{equation}
+			\frac{f_{\text{observed}}}{f_{\text{source}}} = \frac{\tensor{e}{_o_0^\mu}\tensor{v}{_o_\mu}}{\tensor{e}{_s_0^\mu}\tensor{v}{_s_\mu}}.
+		\end{equation}
+		$\tensor{e}{_o_0^\mu}$ and $\tensor{e}{_s_0^\mu}$ are the 0th vierbein vectors of the observer and source respectively, $\tensor{v}{_o^\mu}$ and $\tensor{v}{_s^\mu}$ are the velocity vectors of the light ray at the observer and source respectively, connected by parallel transport along the light ray. This does not mean any additional calculations, since the velocity vector of a geodesic is automatically parallel transported along the geodesic, so the velocity vector in the initial condition and at the last timestep of the integration are sufficient. If the initial condition generation algorithm guarantees the length of the time component in the observer's reference frame, redshift can be easily calculated just with the result of numerical integration and the 4-velocity vector of the source at the hit point. 
+	\subsection{Differential equation solver}
+		The differential equation solver is capable of implementing a general forward Runge-Kutta method based on the A matrix, b and c vectors to solve the equation $y^\prime(t) = f(t, y)$. The A matrix contains the information about how to calculate the $y$ value for the current $f$ evaluation based on the previous $f$ estimates, the b vector contains the weights about how to combine the derivative estimates to give the final estimate used for the time step, and the c vector contains the t parameter increments to be used in each step evaluating $f$.
+	\section{conclusion}
+		
 	\bibliographystyle{abeld}
     \bibliography{ref}
 \end{document}
