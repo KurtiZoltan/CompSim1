@@ -12,3 +12,9 @@ _deps
 build
 pic
 *.vscode*
+*.aux
+*.bbl
+*.blg
+*.log
+*.out
+*.toc
