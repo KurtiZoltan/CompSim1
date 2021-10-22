@@ -24,5 +24,5 @@ if (OPENMP_FOUND)
 endif()
 
 add_executable(trace ${SOURCE})
-target_link_libraries(trace PRIVATE ${TIFF_LIBRARIES} PRIVATE OpenMP::OpenMP_CXX)
+target_link_libraries(trace PRIVATE ${TIFF_LIBRARIES})
 target_include_directories(trace PRIVATE ${TIFF_INCLUDE_DIR})
