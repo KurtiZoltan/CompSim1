@@ -1,5 +1,6 @@
 #include "Solver.hpp"
 #include <cmath>
+#include <fstream>
 
 f32& State::operator[](u32 i)
 {
@@ -116,6 +117,18 @@ RGB eqsolver(const Spacetime& spacetime, f32 t0, const State& y0, f32 h0, f32 tf
         objects.testValues[i] = objects.intersects[i](y.position);
     }
     
+    #ifdef PRINT
+    u32 goodstep = 0, badstep = 0;
+    std::ofstream file;
+    const char* txtname = "../python/planet.txt";
+    file.open(txtname, std::ios::out);
+    if (!file.is_open())
+    {
+        std::cout << "File " << txtname << " couldn't be opened.\n";
+        throw 1;
+    }
+    #endif
+    
     while (t < tfinal)
     {
         f32 t1 = t, t2 = t;
@@ -136,15 +149,32 @@ RGB eqsolver(const Spacetime& spacetime, f32 t0, const State& y0, f32 h0, f32 tf
                     #ifndef NDEBUG
                     std::cout << "Intersect with object " << i << "!\n";
                     #endif
+                    #ifdef PRINT
+                    file.close();
+                    #endif
                     return objects.colors[i](y);
                 }
                 objects.testValues[i] = test;
             }
             t = t1;
             y = y1;
+            #ifdef PRINT
+            file << t << " " << y.position[0] << " " << y.position[1] << " " << y.position[2] << " " << y.position[3] << " " << y.velocity[0] << " " << y.velocity[1] << " " << y.velocity[2] << " " << y.velocity[3] << "\n";
+            goodstep++;
+            #endif
         }
+        #ifdef PRINT
+        else
+        {
+            badstep++;
+        }
+        #endif
         h = h / std::max(std::pow(error / errorGoal, 1/errorOrder), 0.5f);
     }
+    #ifdef PRINT
+    file.close();
+    std::cout << "Good steps: " << goodstep << "\nBad steps: " << badstep << "\n";
+    #endif
     RGB ret;
     ret.r = 255;
     ret.g = 0;
@@ -157,7 +187,7 @@ RGB trace(const vec4& stratPosition, const vec4& startVelocity,  const Spacetime
     State start;
     start.position = stratPosition;
     start.velocity = startVelocity;
-	return eqsolver(spacetime, 0, start, 1, 10000, objects);
+	return eqsolver(spacetime, 0, start, 1, 50000, objects);
 }
 
 Objects::Objects() : 

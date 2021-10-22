@@ -104,7 +104,7 @@ RGB redshift(const State& state)
     ret.b = std::max(std::min((int)(255 * (0 + b / 5)), 255), 0);
     return ret;
 }
-
+#ifndef PRINT //disable PRINT in Utils.hpp to enable this code part
 int main()
 {
     Schwarzschild spacetime(M);
@@ -115,3 +115,15 @@ int main()
 	ImageRenderer renderer(spacetime, objects, referenceFrame, 1024, 1024, 90 * PI / 180);
     renderer.traceRays("../pic/sideRedhift.tif");
 }
+#else //!PRINT
+int main()
+{
+    Schwarzschild spacetime(M);
+    Objects objects;
+    
+    vec4 position(0, 100, PI/2, 0);
+    vec4 velocity(1, 0, 0, 0.075 / 100);
+    velocity = velocity / std::sqrt(spacetime.g(position, velocity, velocity));
+    trace(position, velocity, spacetime, objects);
+}
+#endif //!PRINT
