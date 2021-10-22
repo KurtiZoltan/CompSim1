@@ -3,12 +3,13 @@
 #include <iostream>
 #include <cmath>
 
-f32 M = 1;
-f32 Rs = 2 * M;
+f32 M = 1; //mass of the black hole
+f32 Rs = 2 * M; //Schwarzschild radius
+u32 N = 20; //checkerboard resolution
 
 f32 eventHorizon(const vec4& position)
 {
-    return position[1] - (1 + 1e-2) * Rs;
+    return position[1] - (1 + 1e-3) * Rs;
 }
 
 RGB eventHorizonColor(const State& state)
@@ -36,15 +37,17 @@ RGB eventHorizonColor(const State& state)
 f32 skySphere(const vec4& position)
 {
     
-    return Rs * 100 - position[1];
+    return Rs * 20 - position[1];
 }
 
 RGB skyColorNoCorrection(const State& state)
 {
-    f32 modTheta = state.position[2] / PI * 6;
-    f32 modPhi = state.position[3] / PI * 6;
-    bool n1 = (modTheta - std::floor(modTheta)) < 0.5;
-    bool n2 = (modPhi - std::floor(modPhi)) < 0.5;
+    f32 theta = state.position[2];
+    f32 phi = state.position[3];
+    f32 scale = N / PI;
+    
+    bool n1 = (theta * scale - std::floor(theta * scale)) < 0.5;
+    bool n2 = (phi * scale - std::floor(phi * scale)) < 0.5;
     RGB ret;
     if (n1 ^ n2)
     {
@@ -74,7 +77,7 @@ RGB skyColor(const State& state)
     f32 theta = std::atan2(std::sqrt(dirx * dirx + diry * diry), dirz);
     f32 phi = std::atan2(diry, dirx);
     
-    f32 scale = 20 / PI;
+    f32 scale = N / PI;
     
     bool n1 = (theta * scale - std::floor(theta * scale)) < 0.5;
     bool n2 = (phi * scale - std::floor(phi * scale)) < 0.5;
@@ -109,11 +112,11 @@ int main()
 {
     Schwarzschild spacetime(M);
     Objects objects;
-    objects.add(eventHorizon, redshift);
-    objects.add(skySphere, redshift);
-    ReferenceFrame referenceFrame(vec4(0, 1.5 * Rs, PI/2, 0), vec4(1, 0, 0, 0.15), vec4(0, 0, 1, 0), vec4(0, 1, 0, 0));
-	ImageRenderer renderer(spacetime, objects, referenceFrame, 1024, 1024, 90 * PI / 180);
-    renderer.traceRays("../pic/sideRedhift.tif");
+    objects.add(eventHorizon, eventHorizonColor);
+    objects.add(skySphere, skyColorNoCorrection);
+    ReferenceFrame referenceFrame(vec4(0, 10 * Rs, PI/2, 0), vec4(1, 0, 0, 0), vec4(0, -1, 0, 0), vec4(0, 0, -1, 0));
+	ImageRenderer renderer(spacetime, objects, referenceFrame, 1024, 512, 90 * PI / 180);
+    renderer.traceRays("../doc/figs/angleNotCorrected.tif");
 }
 #else //!PRINT
 int main()

@@ -10,4 +10,4 @@ typedef unsigned char u8;
 #define EPSILON (1e-5)
 #define PI 3.14159265359f
 
-#define PRINT
+//#define PRINT

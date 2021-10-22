@@ -10,7 +10,7 @@
 %\usepackage[magyar]{babel}
 \usepackage{indentfirst}
 \usepackage{amsmath}
-
+\usepackage{subcaption}
 \usepackage{float}
 \usepackage{graphicx}
 \usepackage{braket}
@@ -193,11 +193,28 @@
 			\caption{The stepsize of the integration as a function of the number of steps.}
 			\label{stepsize}
 		\end{figure}
-		It can be seen that the stepsize grows exponentially until it reaches the optimal stepsize for the settings of the integrator. From then on it oscillates periodically roughly as a function of the $r$ coordinate. The curvature of the spacetime in the Schwarzschild solution is purely a function of the $r$ coordinate, so apart from the artifacts of the coordinate system (for example near the singularities in $\theta$). Therefore it is expected that for a given local precision the stepsize is a function of the $r$ coordinate.
+		It can be seen that the stepsize grows exponentially until it reaches the optimal stepsize for the settings of the integrator. From then on it oscillates periodically roughly as a function of the $r$ coordinate. The curvature of the spacetime in the Schwarzschild solution is purely a function of the $r$ coordinate, so apart from the artifacts of the coordinate system (for example near the singularities in $\theta$). Therefore it is expected that for a given local precision the stepsize is a function of the $r$ coordinate. It is worth noting that this simulation consists of 688 time steps, and it was not necessary even one time to redo a timestep due to to the predicted timestep not being accurate enough.
 	\subsubsection{Angle correction}
-	
+		\begin{figure}[H]
+			\centering
+			\begin{tabular}{c}
+				\subcaptionbox{Checkerboard based on the corrected angles}{\centering \includegraphics[scale=1.75]{./figs/angleCorrected.pdf}}\\
+				\subcaptionbox{Checkerboard based on the angles without correction}{\centering \includegraphics[scale=1.75]{./figs/angleNotCorrected.pdf}}
+			\end{tabular}
+			\caption{An image with and without the angle correction step after the collision is determined.}
+			\label{anglecorrection}
+		\end{figure}
 	\subsubsection{Redshift}
-	
+		\begin{figure}[H]
+			\begin{tabular}{cc}
+				\subcaptionbox{A}{\includegraphics[scale=0.9]{./figs/frontRedshift.pdf}}&
+				\subcaptionbox{B}{\includegraphics[scale=0.9]{./figs/backRedshift.pdf}}\\
+				\subcaptionbox{C}{\includegraphics[scale=0.9]{./figs/outRedshift.pdf}}&
+				\subcaptionbox{D}{\includegraphics[scale=0.9]{./figs/sideRedshift.pdf}}
+			\end{tabular}
+			\caption{}
+			\label{redshift}
+		\end{figure}
 	\section{Conclusion}
 		
 	\bibliographystyle{abeld}
