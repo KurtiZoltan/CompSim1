@@ -1,11 +1,53 @@
 #include "Schwarzschild.hpp"
 #include "ImageRenderer.hpp"
+#include "tiffio.h"
 #include <iostream>
 #include <cmath>
 
 f32 M = 1; //mass of the black hole
 f32 Rs = 2 * M; //Schwarzschild radius
 u32 N = 20; //checkerboard resolution
+
+char* starfield;
+u32 starfieldWidth, starfieldHeight;
+
+void loadImage()
+{
+    const char* file = "../src/eso0932a.tif";
+    std::cout << "Reading " << file << ".\n";
+    TIFF* tif = TIFFOpen(file, "r");
+    if (!tif)
+    {
+        std::cout << file << "couldn't be opened.";
+        throw 1;
+    }
+    
+    u32 w, h;
+	size_t npixels;
+	u8* raster;
+
+	TIFFGetField(tif, TIFFTAG_IMAGEWIDTH, &w);
+	TIFFGetField(tif, TIFFTAG_IMAGELENGTH, &h);
+    starfieldWidth = w;
+    starfieldHeight = h;
+	npixels = w * h;
+    starfield = new char[npixels * 3];
+	raster = (u8*) _TIFFmalloc(npixels * sizeof (uint32));
+	if (raster != NULL) {
+	    if (TIFFReadRGBAImage(tif, w, h, reinterpret_cast<u32*>(raster), 0)) {
+            for (u32 i = 0; i < npixels; i++)
+            {
+                starfield[i * 3 + 0] = raster[4 * i + 0];
+                starfield[i * 3 + 1] = raster[4 * i + 1];
+                starfield[i * 3 + 2] = raster[4 * i + 2];
+            }
+	    }
+	    _TIFFfree(raster);
+	}
+    
+    TIFFClose(tif);
+    std::cout << "Image loded.\n";
+}
 
 f32 eventHorizon(const vec4& position)
 {
@@ -32,6 +74,11 @@ RGB eventHorizonColor(const State& state)
         ret.b = 0;
     }
     return ret;
+}
+
+RGB black(const State& state)
+{
+    return RGB();
 }
 
 f32 skySphere(const vec4& position)
@@ -61,6 +108,27 @@ RGB skyColorNoCorrection(const State& state)
         ret.g = 0;
         ret.b = 127;
     }
+    return ret;
+}
+
+RGB fancySky(const State& state)
+{
+    f32 r = state.position[1];
+    f32 ctheta = std::cos(state.position[2]);
+    f32 stheta = std::sin(state.position[2]);
+    f32 sphi = std::sin(state.position[3]);
+    f32 cphi = std::cos(state.position[3]);
+    f32 dirx = state.velocity[1] / std::sqrt(1 - 2 * M / r) * stheta * cphi + state.velocity[2] * r * ctheta * cphi - state.velocity[3] * r * stheta * sphi;
+    f32 diry = state.velocity[1] / std::sqrt(1 - 2 * M / r) * stheta * sphi + state.velocity[2] * r * ctheta * sphi + state.velocity[3] * r * stheta * cphi;
+    f32 dirz = state.velocity[1] / std::sqrt(1 - 2 * M / r) * ctheta - state.velocity[2] * r * stheta;
+    f32 theta = std::atan2(std::sqrt(dirx * dirx + diry * diry), dirz);
+    f32 phi = std::atan2(diry, dirx);
+    
+    u32 index = starfieldWidth * (u32)(theta / PI * starfieldHeight) + (u32)(phi / 2 / PI * starfieldWidth);
+    RGB ret;
+    ret.r = starfield[3 * index + 0];
+    ret.g = starfield[3 * index + 1];
+    ret.b = starfield[3 * index + 2];
     return ret;
 }
 
@@ -110,13 +178,17 @@ RGB redshift(const State& state)
 #ifndef PRINT //disable PRINT in Utils.hpp to enable this code part
 int main()
 {
+    loadImage();
+    
     Schwarzschild spacetime(M);
     Objects objects;
-    objects.add(eventHorizon, eventHorizonColor);
-    objects.add(skySphere, skyColorNoCorrection);
+    objects.add(eventHorizon, black);
+    objects.add(skySphere, fancySky);
     ReferenceFrame referenceFrame(vec4(0, 10 * Rs, PI/2, 0), vec4(1, 0, 0, 0), vec4(0, -1, 0, 0), vec4(0, 0, -1, 0));
-	ImageRenderer renderer(spacetime, objects, referenceFrame, 1024, 512, 90 * PI / 180);
-    renderer.traceRays("../doc/figs/angleNotCorrected.tif");
+	ImageRenderer renderer(spacetime, objects, referenceFrame, 1024, 1024, 90 * PI / 180);
+    renderer.traceRays("../pic/test.tif");
+    
+    delete[] starfield;
 }
 #else //!PRINT
 int main()

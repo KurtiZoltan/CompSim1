@@ -63,7 +63,7 @@ void ImageRenderer::traceRays(const char* file)
     TIFFSetField(tif, TIFFTAG_ORIENTATION, ORIENTATION_BOTLEFT);
     TIFFSetField(tif, TIFFTAG_PLANARCONFIG, PLANARCONFIG_CONTIG);
     TIFFSetField(tif, TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_RGB);
-    TIFFSetField(tif, TIFFTAG_COMPRESSION, 1);
+    TIFFSetField(tif, TIFFTAG_COMPRESSION, COMPRESSION_LZW);
     for (u32 i = 0; i < m_height; i++)
     {
         TIFFWriteScanline(tif, image + i * (3 * m_width), i, 0);
