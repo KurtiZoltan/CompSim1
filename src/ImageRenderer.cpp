@@ -158,6 +158,12 @@ f32 det(const vec4& v0, const vec4& v1, const vec4& v2, const vec4& v3)
 
 void ImageRenderer::initFrame(const vec4& time, const vec4& lookAt, const vec4& up)
 {
+    if (m_spacetime.g(m_referenceFrame.position, time, time) < 0)
+    {
+        std::cout << "Time vector is spacelike. Stopping.\n";
+        throw 1;
+    }
+    
     m_referenceFrame.time = time;
     
     m_referenceFrame.forward = lookAt;

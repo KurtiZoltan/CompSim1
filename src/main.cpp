@@ -4,10 +4,11 @@
 #include <cmath>
 
 f32 M = 1;
+f32 Rs = 2 * M;
 
 f32 eventHorizon(const vec4& position)
 {
-    return position[1] - (2 + 1e-2) * M;
+    return position[1] - (1 + 1e-2) * Rs;
 }
 
 RGB eventHorizonColor(const State& state)
@@ -35,7 +36,7 @@ RGB eventHorizonColor(const State& state)
 f32 skySphere(const vec4& position)
 {
     
-    return 2 * M * 100 - position[1];
+    return Rs * 100 - position[1];
 }
 
 RGB skyColorNoCorrection(const State& state)
@@ -93,13 +94,24 @@ RGB skyColor(const State& state)
     return ret;
 }
 
+RGB redshift(const State& state)
+{
+    f32 fo = -state.velocity[0] * std::sqrt(1 - 2 * M / state.position[1]);
+    f32 b = 1 / fo;
+    RGB ret;
+    ret.r = std::max(std::min((int)(255 * (1 - b / 5)), 255), 0);
+    ret.g = 0;
+    ret.b = std::max(std::min((int)(255 * (0 + b / 5)), 255), 0);
+    return ret;
+}
+
 int main()
 {
     Schwarzschild spacetime(M);
     Objects objects;
-    objects.add(eventHorizon, eventHorizonColor);
-    objects.add(skySphere, skyColor);
-    ReferenceFrame referenceFrame(vec4(0, 40 * 2 * M, PI/2, 0), vec4(1, 0, 0, 0), vec4(0, -1, 0, 0), vec4(0, 0, -1, 0));
-	ImageRenderer renderer(spacetime, objects, referenceFrame, 1024, 1024, 70 * PI / 180);
-    renderer.traceRays("../pic/test.tif");
+    objects.add(eventHorizon, redshift);
+    objects.add(skySphere, redshift);
+    ReferenceFrame referenceFrame(vec4(0, 1.5 * Rs, PI/2, 0), vec4(1, 0, 0, 0.15), vec4(0, 0, 1, 0), vec4(0, 1, 0, 0));
+	ImageRenderer renderer(spacetime, objects, referenceFrame, 1024, 1024, 90 * PI / 180);
+    renderer.traceRays("../pic/sideRedhift.tif");
 }

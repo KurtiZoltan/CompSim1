@@ -163,7 +163,15 @@
 		\begin{equation}
 			\frac{f_{\text{observed}}}{f_{\text{source}}} = \frac{\tensor{e}{_o_0^\mu}\tensor{v}{_o_\mu}}{\tensor{e}{_s_0^\mu}\tensor{v}{_s_\mu}}.
 		\end{equation}
-		$\tensor{e}{_o_0^\mu}$ and $\tensor{e}{_s_0^\mu}$ are the 0th vierbein vectors of the observer and source respectively, $\tensor{v}{_o^\mu}$ and $\tensor{v}{_s^\mu}$ are the velocity vectors of the light ray at the observer and source respectively, connected by parallel transport along the light ray. This does not mean any additional calculations, since the velocity vector of a geodesic is automatically parallel transported along the geodesic, so the velocity vector in the initial condition and at the last timestep of the integration are sufficient. If the initial condition generation algorithm guarantees the length of the time component in the observer's reference frame, redshift can be easily calculated just with the result of numerical integration and the 4-velocity vector of the source at the hit point. 
+		$\tensor{e}{_o_0^\mu}$ and $\tensor{e}{_s_0^\mu}$ are the 0th vierbein vectors of the observer and source respectively, $\tensor{v}{_o^\mu}$ and $\tensor{v}{_s^\mu}$ are the velocity vectors of the light ray at the observer and source respectively, connected by parallel transport along the light ray. This does not mean any additional calculations, since the velocity vector of a geodesic is automatically parallel transported along the geodesic, so the velocity vector in the initial condition and at the last timestep of the integration are sufficient. If the initial condition generation algorithm guarantees the length of the time component in the observer's reference frame, redshift can be easily calculated just with the result of numerical integration and the 4-velocity vector of the source at the hit point.
+	\subsection{Results}
+		
+	\subsubsection{Numerical accuracy of the integration}
+		The stepsize of the integration is determined by the ration of the error of components to the $l2$ norm of $y$. An independent way of checking accuracy is to check if the lorentzian length of the tangent vector is constant. In nonrelativistic mechanics problems energy conservation provides the possibility of independent verification of precision.
+	\subsubsection{Angle correction}
+	
+	\subsubsection{Redshift}
+	
 	\section{Conclusion}
 		
 	\bibliographystyle{abeld}
