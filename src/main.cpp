@@ -124,7 +124,7 @@ RGB fancySky(const State& state)
     f32 theta = std::atan2(std::sqrt(dirx * dirx + diry * diry), dirz);
     f32 phi = std::atan2(diry, dirx);
     
-    u32 index = starfieldWidth * (u32)(theta / PI * starfieldHeight) + (u32)(phi / 2 / PI * starfieldWidth);
+    u32 index = (u32)(theta / PI * starfieldHeight) * starfieldWidth + (u32)((phi / 2 / PI + 0.5) * starfieldWidth);
     RGB ret;
     ret.r = starfield[3 * index + 0];
     ret.g = starfield[3 * index + 1];
@@ -184,7 +184,11 @@ int main()
     Objects objects;
     objects.add(eventHorizon, black);
     objects.add(skySphere, fancySky);
-    ReferenceFrame referenceFrame(vec4(0, 10 * Rs, PI/2, 0), vec4(1, 0, 0, 0), vec4(0, -1, 0, 0), vec4(0, 0, -1, 0));
+    vec4 position = vec4(0, 10 * Rs, PI/2, 0);
+    vec4 velocity = vec4(1, 0, 0, 0);
+    vec4 forward  = vec4(0, -1, 0, 0);
+    vec4 up       = vec4(0, 0, -1, 0);
+    ReferenceFrame referenceFrame(position, velocity, forward, up);
 	ImageRenderer renderer(spacetime, objects, referenceFrame, 1024, 1024, 90 * PI / 180);
     renderer.traceRays("../pic/test.tif");
     
