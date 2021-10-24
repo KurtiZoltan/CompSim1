@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from numpy.core.fromnumeric import ndim
 
-frametimes = np.linspace(0, 3000, 3000)
+frametimes = np.linspace(0, 300, 300)
 
 [tau, t, r, theta, phi, vt, vr, vtheta, vphi] = np.loadtxt("orbit.txt").transpose()
 tau = tau - 3
