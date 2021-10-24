@@ -2,6 +2,9 @@
 #include "ImageRenderer.hpp"
 #include "tiffio.h"
 #include <iostream>
+#include <fstream>
+#include <iomanip>
+#include <sstream>
 #include <cmath>
 
 f32 M = 1; //mass of the black hole
@@ -84,7 +87,7 @@ RGB black(const State& state)
 f32 skySphere(const vec4& position)
 {
     
-    return Rs * 20 - position[1];
+    return Rs * 200 - position[1];
 }
 
 RGB skyColorNoCorrection(const State& state)
@@ -123,8 +126,9 @@ RGB fancySky(const State& state)
     f32 dirz = state.velocity[1] / std::sqrt(1 - 2 * M / r) * ctheta - state.velocity[2] * r * stheta;
     f32 theta = std::atan2(std::sqrt(dirx * dirx + diry * diry), dirz);
     f32 phi = std::atan2(diry, dirx);
+    phi = (phi >= 0) ? phi : phi + 2 * PI;
     
-    u32 index = (u32)(theta / PI * starfieldHeight) * starfieldWidth + (u32)((phi / 2 / PI + 0.5) * starfieldWidth);
+    u32 index = (u32)(theta / PI * starfieldHeight) * starfieldWidth + (u32)(phi / 2 / PI * starfieldWidth);
     RGB ret;
     ret.r = starfield[3 * index + 0];
     ret.g = starfield[3 * index + 1];
@@ -175,7 +179,9 @@ RGB redshift(const State& state)
     ret.b = std::max(std::min((int)(255 * (0 + b / 5)), 255), 0);
     return ret;
 }
+#define VIDEO
 #ifndef PRINT //disable PRINT in Utils.hpp to enable this code part
+#ifndef VIDEO
 int main()
 {
     loadImage();
@@ -184,7 +190,7 @@ int main()
     Objects objects;
     objects.add(eventHorizon, black);
     objects.add(skySphere, fancySky);
-    vec4 position = vec4(0, 10 * Rs, PI/2, 0);
+    vec4 position = vec4(0, 100 * Rs, PI/2, 0);
     vec4 velocity = vec4(1, 0, 0, 0);
     vec4 forward  = vec4(0, -1, 0, 0);
     vec4 up       = vec4(0, 0, -1, 0);
@@ -194,6 +200,38 @@ int main()
     
     delete[] starfield;
 }
+#else //VIDEO
+int main()
+{
+    loadImage();
+    Schwarzschild spacetime(M);
+    Objects objects;
+    objects.add(eventHorizon, black);
+    objects.add(skySphere, fancySky);
+    vec4 forward  = vec4(0, -1, 0, 0);
+    vec4 up       = vec4(0, 0, -1, 0);
+    
+    std::ifstream input;
+    input.open("../src/frames.txt", std::ios::in);
+    u32 framecount = 0;
+    while (!input.eof())
+    {
+        std::stringstream ss = std::stringstream();
+        ss << "../pic/videoImage" << std::setw(4) << std::setfill('0') << framecount++ << ".tif";
+        std::string s = ss.str();
+        const char* file = s.c_str();
+        f32 t, r, theta, phi, vt, vr, vtheta, vphi;
+        input >> t >> r >> theta >> phi >> vt >> vr >> vtheta >> vphi;
+        vec4 position(t, r, theta, phi);
+        vec4 time(vt, vr, vtheta, vphi);
+        ReferenceFrame referenceFrame(position, time, forward, up);
+	    ImageRenderer renderer(spacetime, objects, referenceFrame, 1024, 1024, 90 * PI / 180);
+        renderer.traceRays(file);
+    }
+    input.close();
+    delete[] starfield;
+}
+#endif //VIDEO
 #else //!PRINT
 int main()
 {
@@ -201,7 +239,7 @@ int main()
     Objects objects;
     
     vec4 position(0, 100, PI/2, 0);
-    vec4 velocity(1, 0, 0, 0.075 / 100);
+    vec4 velocity(1.5, 0, -0.01/100, 0.09 / 100);
     velocity = velocity / std::sqrt(spacetime.g(position, velocity, velocity));
     trace(position, velocity, spacetime, objects);
 }

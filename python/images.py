@@ -6,7 +6,7 @@ Rs = 2 * M
 
 #planet image
 
-[tau, t, r, theta, phi, vt, vr, vtheta, vphi] = np.loadtxt("planet.txt").transpose()
+[tau, t, r, theta, phi, vt, vr, vtheta, vphi] = np.loadtxt("orbit.txt").transpose()
 #orbit
 x = r * np.cos(phi)
 y = r * np.sin(phi)

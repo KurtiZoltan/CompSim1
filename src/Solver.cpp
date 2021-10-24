@@ -68,8 +68,13 @@ const f32 a[] = {0,   0,   0, 0,
 const f32 c[] = {0, 0.5, 0.5, 1};
 const f32 b[] = {1/6.0, 1/3.0, 1/3.0, 1/6.0};
 
+#ifndef PRINT
 const f32 relTol = 1e-6;
 const f32 abstol = 1e-6;
+#else
+const f32 relTol = 5e-7;
+const f32 abstol = 5e-7;
+#endif
 const f32 errorGoal = 0.25;
 const f32 errorOrder = 5;
 
@@ -120,7 +125,7 @@ RGB eqsolver(const Spacetime& spacetime, f32 t0, const State& y0, f32 h0, f32 tf
     #ifdef PRINT
     u32 goodstep = 0, badstep = 0;
     std::ofstream file;
-    const char* txtname = "../python/planet.txt";
+    const char* txtname = "../python/orbit.txt";
     file.open(txtname, std::ios::out);
     if (!file.is_open())
     {
@@ -187,7 +192,7 @@ RGB trace(const vec4& stratPosition, const vec4& startVelocity,  const Spacetime
     State start;
     start.position = stratPosition;
     start.velocity = startVelocity;
-	return eqsolver(spacetime, 0, start, 1, 50000, objects);
+	return eqsolver(spacetime, 0, start, 1, 3000, objects);
 }
 
 Objects::Objects() : 
