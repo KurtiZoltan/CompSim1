@@ -13,3 +13,5 @@ make
 After this the result will be saved in the CompSim1/pic folder.
 
 Depends on OpenMP and LibTIFF.
+
+[Overview](doc/doc.pdf)
